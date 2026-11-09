@@ -24,3 +24,9 @@ logs/
 .vscode/
 .idea/
 .DS_Store
+
+# Test artifacts
+tests/__pycache__/
+tests/fixtures/*.db
+tests/fixtures/*.bin
+.pytest_cache/
