@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VANTHRIS EVIDENCE CONSOLE — {{ device.model }}</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --panel: #141414;
+    --panel-2: #1a1a1a;
+    --border: #2a2a2a;
+    --text: #d8d8d8;
+    --muted: #7a7a7a;
+    --accent: #5fd700;
+    --amber: #ffb000;
+    --red: #ff4d4d;
+    --mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
+    --sans: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    background: var(--panel);
+  }
+  header h1 {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 18px;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  header .tagline {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+  header .device {
+    margin-left: auto;
+    font-family: var(--mono);
+    color: var(--text);
+    font-size: 12px;
+  }
+  header .device span { color: var(--accent); }
+
+  nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 12px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+  section.tab { display: none; }
+  section.tab.active { display: block; }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+
+  .grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 2px;
+  }
+  .stat .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .stat .value {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text);
+    margin-top: 6px;
+  }
+  .stat .value.accent { color: var(--accent); }
+  .stat .value.amber { color: var(--amber); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--panel-2);
+    position: sticky; top: 0;
+  }
+  td.mono { font-family: var(--mono); font-size: 12px; }
+  td.hash { font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-all; }
+  tr:hover td { background: #1c1c1c; }
+
+  input[type="text"], select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 2px;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 12px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+  .toolbar { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+
+  button.action {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+  button.action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  a.action { text-decoration: none; display: inline-block; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  .panel p { color: var(--text); margin: 0 0 8px 0; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel.warn { border-left: 3px solid var(--amber); }
+  .panel.critical { border-left: 3px solid var(--red); }
+  .panel.ok { border-left: 3px solid var(--accent); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    border: 1px solid currentColor;
+  }
+  .badge.confirmed { color: var(--accent); }
+  .badge.recoverable { color: var(--amber); }
+  .badge.unverified { color: var(--muted); }
+  .badge.reconstructed { color: #6cb6ff; }
+
+  .gallery {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  .tile {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px;
+    font-size: 12px;
+  }
+  .tile .name { font-family: var(--mono); color: var(--text); margin-bottom: 6px; word-break: break-all; }
+  .tile .meta { color: var(--muted); font-size: 11px; font-family: var(--mono); }
+  .tile .type { color: var(--accent); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px; }
+
+  .empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+  }
+  .empty strong { color: var(--amber); display: block; margin-bottom: 8px; letter-spacing: 1px; }
+
+  footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VANTHRIS EVIDENCE CONSOLE</h1>
+  <span class="tagline">Recover the evidence. Preserve the truth.</span>
+  <div class="device">
+    {{ device.manufacturer }} <span>{{ device.model }}</span> · Android {{ device.android_version }}
+  </div>
+</header>
+
+<nav>
+  <button data-tab="overview" class="active">OVERVIEW</button>
+  <button data-tab="chats">CHATS</button>
+  <button data-tab="media">MEDIA</button>
+  <button data-tab="recovered">RECOVERED</button>
+  <button data-tab="forensic">FORENSIC</button>
+  <button data-tab="export">EXPORT</button>
+</nav>
+
+<main>
+
+<!-- ============ OVERVIEW ============ -->
+<section class="tab active" id="tab-overview">
+  <h2>Acquisition Overview</h2>
+  <div class="grid">
+    <div class="stat"><div class="label">Manufacturer</div><div class="value">{{ device.manufacturer }}</div></div>
+    <div class="stat"><div class="label">Model</div><div class="value">{{ device.model }}</div></div>
+    <div class="stat"><div class="label">Android Version</div><div class="value">{{ device.android_version }}</div></div>
+    <div class="stat"><div class="label">Acquisition (UTC)</div><div class="value mono" style="font-size:13px">{{ acquisition_utc }}</div></div>
+    <div class="stat"><div class="label">Artifacts Collected</div><div class="value accent">{{ total_artifacts }}</div></div>
+    <div class="stat"><div class="label">Chat Records</div><div class="value accent">{{ message_count }}</div></div>
+    <div class="stat"><div class="label">Media Files</div><div class="value accent">{{ media_count }}</div></div>
+    <div class="stat"><div class="label">Recovery Findings</div><div class="value amber">{{ recovery_count }}</div></div>
+  </div>
+
+  <h2>Collection Limitations</h2>
+  {% if limitations %}
+  <div class="panel warn">
+    {% for lim in limitations %}<p>· {{ lim }}</p>{% endfor %}
+  </div>
+  {% else %}
+  <div class="panel ok"><p>No declared limitations in this acquisition manifest.</p></div>
+  {% endif %}
+</section>
+
+<!-- ============ CHATS ============ -->
+<section class="tab" id="tab-chats">
+  <h2>Analyzed Conversations</h2>
+
+  {% if messages %}
+  <div class="toolbar">
+    <input type="text" id="chatSearch" placeholder="Filter by sender, JID, or message text…">
+  </div>
+  <table id="chatTable">
+    <thead>
+      <tr>
+        <th style="width:180px">Timestamp (UTC)</th>
+        <th style="width:180px">Sender / JID</th>
+        <th>Message</th>
+        <th style="width:70px">Dir</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in messages %}
+      <tr>
+        <td class="mono">{{ m.timestamp_iso or '—' }}</td>
+        <td class="mono">{{ m.sender or m.jid or '—' }}</td>
+        <td>{{ m.text or '' }}</td>
+        <td class="mono">{% if m.from_me %}&gt; out{% else %}&lt; in{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    <strong>NO CHAT DATABASE ACQUIRED</strong>
+    The WhatsApp database (msgstore.db) was not available for analysis.<br>
+    This is expected on non-rooted devices due to Android app sandboxing.<br><br>
+    Acquire a database manually via a user-authorized export, then run:<br>
+    <code style="color:var(--accent)">python main.py --evidence &lt;evidence_dir&gt; --db &lt;msgstore.db&gt;</code>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ============ MEDIA ============ -->
+<section class="tab" id="tab-media">
+  <h2>Media Gallery</h2>
+
+  {% if media %}
+  <div class="toolbar">
+    <select id="mediaFilter">
+      <option value="">All types</option>
+      <option value="image">Images</option>
+      <option value="video">Video</option>
+      <option value="audio">Audio</option>
+      <option value="document">Documents</option>
+      <option value="sticker">Stickers</option>
+    </select>
+    <span style="color:var(--muted);font-family:var(--mono);font-size:11px" id="mediaCount">{{ media|length }} items</span>
+  </div>
+  <div class="gallery" id="mediaGallery">
+    {% for m in media %}
+    <div class="tile" data-type="{{ m.type }}">
+      <div class="type">{{ m.type|upper }}</div>
+      <div class="name">{{ m.filename }}</div>
+      <div class="meta">{{ m.size_bytes or '?' }} bytes</div>
+      <div class="meta" style="word-break:break-all;font-size:10px;margin-top:4px">{{ (m.sha256 or '')[:16] }}…</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <strong>NO MEDIA ACQUIRED</strong>
+    The acquisition produced no media files in the WhatsApp shared-storage directories.
+  </div>
+  {% endif %}
+</section>
+
+<!-- ============ RECOVERED ============ -->
+<section class="tab" id="tab-recovered">
+  <h2>Recovery Findings</h2>
+
+  {% if recovery_findings %}
+    {% for f in recovery_findings %}
+    <div class="panel {% if f.confidence == 'Confirmed' %}ok{% elif f.confidence == 'Potentially Recoverable' %}warn{% else %}critical{% endif %}">
+      <p>
+        <span class="badge {{ f.confidence|lower|replace(' ','-') }}">{{ f.confidence }}</span>
+        &nbsp;<span style="font-family:var(--mono);color:var(--muted);font-size:11px">{{ f.type|upper }}</span>
+      </p>
+      <p>{{ f.description }}</p>
+      {% if f.source %}<p style="color:var(--muted);font-family:var(--mono);font-size:11px">SOURCE: {{ f.source }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="empty">
+    <strong>NO RECOVERY FINDINGS</strong>
+    The analysis module produced no recovery findings for this dataset.
+  </div>
+  {% endif %}
+</section>
+
+<!-- ============ FORENSIC ============ -->
+<section class="tab" id="tab-forensic">
+  <h2>Evidence Integrity</h2>
+
+  <div class="panel">
+    <p><strong style="color:var(--accent);font-family:var(--mono)">DATABASE</strong></p>
+    <p>Analyzed: {{ 'Yes' if db_analyzed else 'No' }}</p>
+    <p>Integrity check: {{ 'OK' if db_integrity else ('FAILED' if db_integrity is not none else 'N/A') }}</p>
+    <p>Message count: {{ message_count }}</p>
+    <p>Freelist pages: {{ db_freelist if db_freelist is not none else 'N/A' }}</p>
+  </div>
+
+  <h2>Artifact Hashes (SHA-256)</h2>
+  {% if artifacts %}
+  <table>
+    <thead><tr><th style="width:50px">#</th><th>Source Path</th><th style="width:90px">Size</th><th style="width:70px">Type</th><th>SHA-256</th></tr></thead>
+    <tbody>
+      {% for a in artifacts %}
+      <tr>
+        <td class="mono">{{ loop.index }}</td>
+        <td class="mono" style="word-break:break-all">{{ a.source_path }}</td>
+        <td class="mono">{{ a.size_bytes }}</td>
+        <td class="mono">{{ a.category }}</td>
+        <td class="hash">{{ a.sha256 or 'FAILED' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><strong>NO ARTIFACT HASHES</strong>No files were acquired in this session.</div>
+  {% endif %}
+</section>
+
+<!-- ============ EXPORT ============ -->
+<section class="tab" id="tab-export">
+  <h2>Export Center</h2>
+
+  <div class="panel">
+    <p><strong style="color:var(--accent);font-family:var(--mono)">ANALYSIS REPORTS</strong></p>
+    <p>Generate machine-readable and human-readable reports from the acquired data.</p>
+    <p style="margin-top:12px">
+      <button class="action" onclick="downloadExport('chats.txt')">CHATS AS TXT</button>
+      <button class="action" onclick="downloadExport('summary.csv')">ARTIFACTS AS CSV</button>
+      <button class="action" onclick="downloadExport('report.json')">FULL REPORT AS JSON</button>
+    </p>
+  </div>
+
+  <div class="panel">
+    <p><strong style="color:var(--accent);font-family:var(--mono)">EVIDENCE ARCHIVES</strong></p>
+    <p>Package the entire evidence directory (manifest, analysis, media) as a single ZIP.</p>
+    <p style="margin-top:12px">
+      <button class="action" onclick="downloadExport('evidence.zip')">DOWNLOAD EVIDENCE ZIP</button>
+    </p>
+  </div>
+
+  <div class="panel">
+    <p><strong style="color:var(--accent);font-family:var(--mono)">NOTE</strong></p>
+    <p>Export files are generated during analysis and stored next to this HTML report in the evidence directory. The buttons below open the file if present; nothing is uploaded anywhere.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>VANTHRIS · Blacksite Orion Group</span>
+  <span>Generated {{ generated_utc }}</span>
+</footer>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('section.tab').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Chat search
+  const chatSearch = document.getElementById('chatSearch');
+  if (chatSearch) {
+    chatSearch.addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#chatTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Media filter
+  const mediaFilter = document.getElementById('mediaFilter');
+  if (mediaFilter) {
+    mediaFilter.addEventListener('change', e => {
+      const t = e.target.value;
+      let visible = 0;
+      document.querySelectorAll('#mediaGallery .tile').forEach(tile => {
+        const show = !t || tile.dataset.type === t;
+        tile.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('mediaCount').textContent = visible + ' items';
+    });
+  }
+
+  // Export downloads
+  function downloadExport(name) {
+    const a = document.createElement('a');
+    a.href = 'exports/' + name;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+
+</body>
+</html>
